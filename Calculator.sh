@@ -61,5 +61,5 @@ fi
 
 EndTime=$(date)
 
-echo -e "Last run at $(date)\n" >> calculator.log
+echo -e "Last run: $(date)\n" >> calculator.log
 echo -e "Start Time: $StartTime \nEnded on $EndTime\n" >> calculator.log
