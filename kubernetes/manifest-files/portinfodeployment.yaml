@@ -1,0 +1,21 @@
+apiVersion:apps/v1 
+kind: Deployment 
+metadata:
+  name: port-info-deployment
+  namespace: default
+  labels:
+    frontend: web-app
+spec:
+  replicas: 4
+  selector: 
+    matchlabels: 
+      frontend: web-app
+  spec:
+    containers: 
+    - name: nginx-container
+      image: nginx
+      command: ["/bin/bash"]
+      args: ["-c", "echo 'Nginx is running' && sleep 3600"]
+      ports: 
+      - containerPort: 8080
+

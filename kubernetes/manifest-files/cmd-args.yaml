@@ -1,0 +1,13 @@
+apiVersion: v1 
+kind: Pod
+metadata:
+  name: cmd-args-pod
+  namespace: csl-namespace
+spec: 
+  containers:
+  - name: cont-name-cmd-args
+    image: ubuntu
+    command: ["/bin/sh"]
+    args: ["-c", "echo Hello behen ke lawde && sleep 60"]
+  restartPolicy: Never
+

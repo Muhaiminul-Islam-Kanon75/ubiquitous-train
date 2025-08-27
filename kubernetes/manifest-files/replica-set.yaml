@@ -1,0 +1,34 @@
+apiVersion: apps/v1
+kind: ReplicaSet
+metadata:
+  name: test-replicaset
+  namespace: default
+  labels:
+    frontend: replicaset-app
+spec:
+  replicas: 4
+  selector: 
+    matchLabels:
+      frontend: replicaset-app
+  template:
+    metadata:
+      labels:
+        frontend: replicaset-app
+    spec:
+      containers: 
+      - image: httpd:latest
+        name: httpd-container
+        ports:
+          - containerPort: 80
+        command: ["/bin/sh"]
+        args: 
+        - -c 
+        - |
+          echo -e "Nginx is running\n go to test page for verification" > /tmp/output.txt
+          df -hT >> /tmp/output.txt 
+          sleep 3600
+      - image: redis
+        name: redis-container
+        ports:
+        - containerPort: 6379
+  
