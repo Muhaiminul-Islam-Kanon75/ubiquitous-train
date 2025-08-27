@@ -1,0 +1,18 @@
+apiVersion: v1 
+kind: Pod
+metadata:
+  name: cmd-args-pod
+  namespace: csl-namespace
+spec: 
+  containers:
+  - name: cont-name-cmd-args
+    image: nginx
+    ports: 
+      containerPort: 8080
+    command: ["/bin/bash"]
+    args: 
+    - -c 
+    - |
+      echo Hello behen ke lawd
+      df -hT > /tmp/df-output.txt && sleep 360
+

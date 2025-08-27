@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata: 
+  name: resource-test
+  namespace: default
+  labels: 
+    app: backend
+spec: 
+  replicas: 5
+  selector: 
+    matchLabels: 
+      app: backend
+  template: 
+    metadata: 
+      labels: 
+        app: backend
+    spec: 
+      containers: 
+      - image: httpd:latest
+        name: apache-cont
+        command: ["/bin/sh"]
+        args: 
+        - -c 
+        - |
+          apache2 -v >> /tmp/output.txt 
+          printf "\nAbove is apache version" >> /tmp/output.txt
+          df -hT >> /tmp/output.txt
+          sleep 3600
+        resources:
+          requests: 
+            memory: "128Mi"
+            cpu: "500m"
+          limits:
+            memory: "256Mi"
+            cpu: "2"
+            

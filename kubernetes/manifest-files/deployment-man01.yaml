@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata: 
+  name: nginx-deploy
+  labels: 
+    app: backend
+spec: 
+  replicas: 7
+  selector: 
+    matchLabels: 
+      app: backend
+  template: 
+    metadata: 
+      labels: 
+        app: backend
+    spec: 
+      containers: 
+      - image: nginx:latest
+        name: nginx-cont
+        command: ["/bin/sh"]
+        args: 
+        - -c 
+        - |
+          printf "Hello we are here in pods \nCheck the nginx version\n" > /tmp/output.txt 
+          nginx --version &>> /tmp/output.txt 
+          nginx -v &>> /tmp/output.txt
+          sleep 3600
+

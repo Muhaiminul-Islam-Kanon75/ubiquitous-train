@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata: 
+  name: ng-red-deploy
+  labels: 
+    backend: redis-nginx
+spec: 
+  replicas: 5
+  selector: 
+    matchLabels: 
+      backend: redis-nginx
+  template: 
+    metadata: 
+      labels: 
+        backend: redis-nginx 
+    spec: 
+      containers: 
+      - image: httpd:latest
+        name: httpd-cont
+        command: ["/bin/sh"]
+        args: 
+        - -c 
+        - |
+          printf "Hello we are here in pods \nCheck the nginx version" > /tmp/output.txt 
+          nginx --version >> /tmp/output.txt 
+          sleep 3600
+      - image: redis:7.0.13
+        name: redis-container
+        ports:
+        - containerPort: 6379
+        command: ["/bin/sh"]
+        args: 
+        - -c 
+        - |
+          apt update -y 
+          printf "Hello we are here in pods \nCheck the redis version" > /tmp/output.txt
+          redis-server --version >> /tmp/output.txt 
+          sleep 3600

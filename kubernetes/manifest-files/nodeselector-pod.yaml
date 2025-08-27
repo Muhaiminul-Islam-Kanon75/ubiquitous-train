@@ -1,0 +1,30 @@
+
+apiVersion: v1 
+kind: Pod 
+metadata: 
+  name: nodeselector-pod
+  labels: 
+    app: db
+spec: 
+  nodeSelector: 
+    app: db
+  containers: 
+  - image: httpd:latest
+    name: apache-cont
+    command: ["/bin/sh"]
+    args: 
+    - -c 
+    - |
+      httpd=$(httpd -v)
+      printf "Apache version: $httpd-v \n\n" >> /tmp/output.txt
+      df -hT >> /tmp/output.txt
+      sleep 3600
+    resources: 
+      requests: 
+        memory: "128Mi"
+        cpu: "100m"
+      limits: 
+        memory: "1Gi"
+        cpu: "1"
+        
+

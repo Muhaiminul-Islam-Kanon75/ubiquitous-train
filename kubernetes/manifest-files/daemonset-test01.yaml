@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata: 
+  name: daemonset-deploy
+  labels: 
+    log: collector
+spec:
+  selector: 
+    matchLabels: 
+      log: collector
+  template: 
+    metadata: 
+      labels: 
+        log: collector
+    spec: 
+      containers: 
+      - image: alpine:3.18
+        name: alpine-cont
+        command: ["/bin/sh"]
+        args: 
+        - -c 
+        - | 
+          cat /etc/alpine-release >> /tmp/output.txt
+          sleep 3600
+        resources: 
+          requests: 
+            memory: "512Mi"
+            cpu: "0.1"
+          limits: 
+            memory: "1024Mi"
+            cpu: "1"
+
+

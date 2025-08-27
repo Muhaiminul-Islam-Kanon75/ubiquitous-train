@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata: 
+  name: ns-deploy
+  labels: 
+    app: backend
+spec: 
+  replicas: 5 
+  selector: 
+    matchLabels: 
+      web: backend
+  template: 
+    metadata: 
+      labels: 
+        web: backend
+    spec: 
+      nodeSelector: 
+        web: backend
+      containers: 
+      - image: httpd:latest
+        name: apache-cont
+        command: ["/bin/sh"]
+        args: 
+        - -c 
+        - |
+          httpd=$(httpd -v)
+          printf "Apache version: $httpd-v \n\n" >> /tmp/output.txt
+          df -hT >> /tmp/output.txt
+          sleep 3600
+        resources: 
+          requests: 
+            memory: "128Mi"
+            cpu: "100m"
+          limits: 
+            memory: "1Gi"
+            cpu: "1"
+            
+
