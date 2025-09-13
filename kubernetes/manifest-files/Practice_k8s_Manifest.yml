@@ -782,7 +782,7 @@ spec:
       containers: 
       - image: 
         name: 
-        cmd: ["/bin/bash"]
+        command: ["/bin/bash"]
         args: 
         - -c 
         - | 
@@ -824,7 +824,7 @@ spec:
       containers:
       - image: 
         name: 
-        cmd: ["/bin/sh"]
+        command: ["/bin/sh"]
         args: 
         - -c 
         - | 
@@ -838,12 +838,32 @@ spec:
             cpu: 
             memory: 
             
-      
-
-
-
-
-
-
-
-      
+---
+# Init containers
+apiVersion: apps/v1
+kind: Deployment
+metadata: 
+  name: init-container-dp
+  namespace: default
+  labels: 
+    web: frontend
+spec: 
+  replicas: 5
+  selector: 
+    matchLabels: 
+      web: db
+  template: 
+    metadata: 
+      labels: 
+        web: db
+    spec: 
+      containers: 
+      - image: nginx
+        name: nginx-cont
+        command: ['sh', '-c', 'echo The app is running && sleep 3600']
+ 
+      initContainers: 
+      - image: busybox
+        name: busybox-init
+        command: ['sh', '-c', 'echo Waiting for service >> /tmp/init-container.txt && sleep 10']
+        
