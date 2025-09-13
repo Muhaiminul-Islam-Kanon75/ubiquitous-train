@@ -1,0 +1,21 @@
+{
+  "ok": true,
+  "result": {
+    "message_id": 29,
+    "from": {
+      "id": 8412711666,
+      "is_bot": true,
+      "first_name": "ServerTriggerAlert",
+      "username": "SrvrAlrt_bot"
+    },
+    "chat": {
+      "id": 2032649319,
+      "first_name": "Muhaiminul Islam",
+      "last_name": "Kanon",
+      "username": "Muhaiminul_islam_kanon",
+      "type": "private"
+    },
+    "date": 1756696623,
+    "text": "hello bhai"
+  }
+}

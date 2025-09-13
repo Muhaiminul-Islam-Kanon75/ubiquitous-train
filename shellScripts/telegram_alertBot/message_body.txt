@@ -1,0 +1,48 @@
+eth0: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
+        inet 192.168.120.189  netmask 255.255.240.0  broadcast 192.168.127.255
+        inet6 fe80::215:5dff:fea7:c94f  prefixlen 64  scopeid 0x20<link>
+        ether 00:15:5d:a7:c9:4f  txqueuelen 1000  (Ethernet)
+        RX packets 909  bytes 933995 (933.9 KB)
+        RX errors 0  dropped 0  overruns 0  frame 0
+        TX packets 868  bytes 83478 (83.4 KB)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+
+lo: flags=73<UP,LOOPBACK,RUNNING>  mtu 65536
+        inet 127.0.0.1  netmask 255.0.0.0
+        inet6 ::1  prefixlen 128  scopeid 0x10<host>
+        loop  txqueuelen 1000  (Local Loopback)
+        RX packets 126  bytes 10562 (10.5 KB)
+        RX errors 0  dropped 0  overruns 0  frame 0
+        TX packets 126  bytes 10562 (10.5 KB)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+
+Filesystem     Type     Size  Used Avail Use% Mounted on
+none           overlay  3.9G     0  3.9G   0% /usr/lib/modules/6.6.87.2-microsoft-standard-WSL2
+none           tmpfs    3.9G  4.0K  3.9G   1% /mnt/wsl
+drivers        9p       235G  151G   85G  64% /usr/lib/wsl/drivers
+/dev/sdd       ext4    1007G  1.9G  954G   1% /
+none           tmpfs    3.9G   80K  3.9G   1% /mnt/wslg
+none           overlay  3.9G     0  3.9G   0% /usr/lib/wsl/lib
+rootfs         rootfs   3.8G  2.7M  3.8G   1% /init
+none           tmpfs    3.9G  516K  3.9G   1% /run
+none           tmpfs    3.9G     0  3.9G   0% /run/lock
+none           tmpfs    3.9G     0  3.9G   0% /run/shm
+none           overlay  3.9G   76K  3.9G   1% /mnt/wslg/versions.txt
+none           overlay  3.9G   76K  3.9G   1% /mnt/wslg/doc
+C:\            9p       235G  151G   85G  64% /mnt/c
+D:\            9p       196G   91G  106G  47% /mnt/d
+E:\            9p       261G  153G  109G  59% /mnt/e
+F:\            9p       261G   87G  174G  34% /mnt/f
+tmpfs          tmpfs    779M   20K  779M   1% /run/user/1000
+
+
+Kernel IP routing table
+Destination     Gateway         Genmask         Flags Metric Ref    Use Iface
+0.0.0.0         192.168.112.1   0.0.0.0         UG    0      0        0 eth0
+192.168.112.0   0.0.0.0         255.255.240.0   U     0      0        0 eth0
+[core]
+	repositoryformatversion = 0
+	filemode = true
+	bare = false
+	logallrefupdates = true
+ref: refs/heads/master
