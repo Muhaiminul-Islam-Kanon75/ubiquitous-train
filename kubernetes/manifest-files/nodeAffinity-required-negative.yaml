@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata: 
+  name: na-required
+  namespace: default
+  labels: 
+    web: frontend
+spec: 
+  replicas: 5
+  selector: 
+    matchLabels: 
+      web: backend
+  template: 
+    metadata: 
+      labels: 
+        web: backend
+    spec:
+      affinity:     
+       nodeAffinity:        
+         requiredDuringSchedulingIgnoredDuringExecution:
+           nodeSelectorTerms: 
+           - matchExpressions:
+             - key: app
+               operator: In 
+               values: 
+               - backend
+      containers: 
+      - image: nginx:latest
+        name: nginx-cont
+        resources: 
+          requests: 
+            memory: "128Mi"
+            cpu: "100m"
+          limits: 
+            memory: "512Mi"
+            cpu: "500m"
+
+

@@ -1,0 +1,39 @@
+# Node Affinity - matchFields
+apiVersion: apps/v1
+kind: Deployment
+metadata: 
+  name: matchfield-nodeaff
+  namespace: default
+  labels: 
+    web: db
+spec: 
+  replicas: 7
+  selector: 
+    matchLabels: 
+      web: db
+  template: 
+    metadata: 
+      labels: 
+        web: db
+    spec: 
+      affinity: 
+        nodeAffinity: 
+          requiredDuringSchedulingIgnoredDuringExecution: 
+            nodeSelectorTerms: 
+            - matchFields: 
+              - key: metadata.name
+                operator: In 
+                values: 
+                - k8sapp01-docker
+      containers: 
+      - image: nginx:latest
+        name: nginx-cont
+        resources: 
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+       
+      

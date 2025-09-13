@@ -15,7 +15,7 @@ spec:
         web: backend
     spec: 
       nodeSelector: 
-        web: backend
+        web: frontend
       containers: 
       - image: httpd:latest
         name: apache-cont

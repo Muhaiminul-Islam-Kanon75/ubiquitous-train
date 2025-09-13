@@ -1,0 +1,849 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: example-pod
+  namespace: example-namespace
+  labels:
+    app: example-app
+spec:
+  containers:
+  - image: nginx:latest
+    name: nginx-container
+  - image: redis:latest
+    name: redis-container
+
+
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx-redis-container
+spec:
+  containers:
+  - image: nginx
+    name: nginx-pod1
+  - image: redis
+    name: redis-pod2
+  restartPolicy: Always
+
+
+--- 
+apiVersion: v1 
+kind: Pod
+metadata:
+  name: cmd-args-pod
+  namespace: csl-namespace
+spec: 
+  containers:
+  - name: cont-name-cmd-args
+    image: ubuntu
+    command: ["/bin/bash"]
+    args: ["-c", "echo Hello behen ke lawde && sleep 360"]
+
+---
+# Alternative 
+apiVersion: v1 
+kind: Pod 
+metadata:
+  name: cmd-args-pod-alt
+  namespace: default
+  labels:
+    app: SMSnotification-app
+spec:
+  containers:
+  - name: cmd-args-container
+    image: ubuntu
+    command: ["/bin/bash"]
+    args:
+    - "-c"
+    - "df -hT > /tmp/df-output.txt"
+  restartPolicy: Always
+
+--- 
+# With Port information
+apiVersion: v1 
+kind: Pod 
+metadata:
+  name: port-info-pod
+  namespace: default
+  labels:
+    frontend: web-app
+spec:
+  containers: 
+  - name: nginx-container
+    image: nginx
+    command: ["/bin/bash"]
+    args: ["-c", "echo 'Nginx is running' && sleep 3600"]
+    ports: 
+    - containerPort: 8080
+    
+--- 
+# Deployment with Port information
+apiVersion: v1 
+kind: Deployment 
+metadata:
+  name: port-info-deployment
+  namespace: default
+  labels:
+    frontend: web-app
+spec:
+  replicas: 4
+  selector: 
+    matchlevel: 
+      frontend: web-app
+  spec:
+    containers: 
+    - name: nginx-container
+      image: nginx
+      command: ["/bin/bash"]
+      args: ["-c", "echo 'Nginx is running' && sleep 3600"]
+      ports: 
+      - containerPort: 8080
+    
+--- 
+# ReplicaSet
+apiVersion: apps/v1
+kind: ReplicaSet
+metadata:
+  name: test-replicaset
+  namespace: default
+  labels:
+    frontend: replicaset-app
+spec:
+  replicas: 4
+  selector: 
+    matchLabels:
+      frontend: replicaset-app
+  template:
+    metadata:
+      labels:
+        frontend: replicaset-app
+    spec:
+      containers: 
+      - image: nginx:latest
+        name: nginx-container
+        ports:
+          - containerPort: 80
+        command: ["/bin/sh"]
+        args: 
+        - -c 
+        - |
+          echo -e "Nginx is running\n go to test page for verification" > /tmp/output.txt
+          df -hT >> /tmp/output.txt 
+          sleep 3600
+      - image: redis
+        name: redis-container
+        ports:
+        - containerPort: 6379
+
+--- 
+apiVersion: apps/v1 
+kind: ReplicaSet
+metadata: 
+  name: ReplicaSet-pod
+  namespace: default
+  labels: 
+    app: web-app
+    env: prod
+spec: 
+  replicas: 4
+  selector: 
+    matchlabels: 
+      app: web-app
+  template: 
+    metadata: 
+      labels: 
+        app: web-app
+    spec: 
+      containers: 
+      - image: nginx:latest
+        name: nginx-container
+        command: ["/bin/sh"]
+        args: 
+        - -c
+        - |
+          echo -e "Nginx is running\n go to test page for verification" > /tmp/output.txt
+          df -hT >> /tmp/output.txt
+          sleep 3600
+
+--- 
+# Deployment file
+apiVersion: apps/v1
+kind: Deployment
+metadata: 
+  name: nginx-deploy
+  labels: 
+    app: backend
+spec: 
+  replicas: 7
+  selector: 
+    matchLabels: 
+      app: backend
+  template: 
+    metadata: 
+      labels: 
+        app: backend
+    spec: 
+      containers: 
+      - image: nginx:latest
+        name: nginx-cont
+        command: ["/bin/sh"]
+        args: 
+        - -c 
+        - |
+          printf "Hello we are here in pods \nCheck the nginx version\n" > /tmp/output.txt 
+          nginx --version &>> /tmp/output.txt 
+          sleep 3600
+
+--- 
+# Multi container Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata: 
+  name: ng-red-deploy
+  labels: 
+    backend: redis-nginx
+spec: 
+  replicas: 5
+  selector: 
+    matchLabels: 
+      backend: redis-nginx
+  template: 
+    metadata: 
+      labels: 
+        backend: redis-nginx 
+    spec: 
+      containers: 
+      - image: nginx:latest
+        name: nginx-cont
+        command: ["/bin/sh"]
+        args: 
+        - -c 
+        - |
+          printf "Hello we are here in pods \nCheck the nginx version" > /tmp/output.txt 
+          nginx --version >> /tmp/output.txt 
+          sleep 3600
+      - image: redis
+        name: redis-container
+        ports:
+        - containerPort: 6379
+        command: ["/bin/sh"]
+        args: 
+        - -c 
+        - |
+          apt update -y 
+          printf "Hello we are here in pods \nCheck the redis version" > /tmp/output.txt
+          redis-server --version >> /tmp/output.txt 
+          sleep 3600
+          
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata: 
+  name: resource-test
+  namespace: default
+  labels: 
+    app: backend
+spec: 
+  replicas: 4 
+  selector: 
+    matchLabels: 
+      app: backend
+  template: 
+    metadata: 
+      labels: 
+        app: backend
+    spec: 
+      containers: 
+      - image: httpd:latest
+        name: apache-cont
+        command: ["/bin/sh"]
+        args: 
+        - -c 
+        - |
+          apache2 -v >> /tmp/output.txt 
+          printf "\nAbove is apache version" >> /tmp/output.txt
+          df -hT >> /tmp/output.txt
+          sleep 3600
+        resources:
+          requests: 
+            memory: "128Mi"
+            cpu: "500m"
+          limits:
+            memory: "256Mi"
+            cpu: "1"
+            
+--- 
+# nodeSelector 
+
+apiVersion: v1 
+kind: Pod 
+metadata: 
+  name: nodeselector-pod
+  labels: 
+    app: db
+spec: 
+  nodeSelector: 
+    app: frontend
+  containers: 
+  - image: httpd:latest
+    name: apache-cont
+    command: ["/bin/sh"]
+    args: 
+    - -c 
+    - |
+      httpd=$(httpd -v)
+      printf "Apache version: $httpd-v \n\n" >> /tmp/output.txt
+      df -hT >> /tmp/output.txt
+      sleep 3600
+    resources: 
+      requests: 
+        memory: "128Mi"
+        cpu: "100m"
+      limits: 
+        memory: "1Gi"
+        cpu: "1"
+        
+--- 
+# nodeSelector
+apiVersion: apps/v1
+kind: Deployment
+metadata: 
+  name: ns-deploy
+  labels: 
+    app: backend
+spec: 
+  replicas: 5 
+  selector: 
+    matchLabels: 
+      web: backend
+  template: 
+    metadata: 
+      labels: 
+        web: backend
+    spec: 
+      nodeSelector: 
+        app: db
+      containers: 
+      - image: httpd:latest
+        name: apache-cont
+        command: ["/bin/sh"]
+        args: 
+        - -c 
+        - |
+          httpd=$(httpd -v)
+          printf "Apache version: $httpd-v \n\n" >> /tmp/output.txt
+          df -hT >> /tmp/output.txt
+          sleep 3600
+        resources: 
+          requests: 
+            memory: "128Mi"
+            cpu: "100m"
+          limits: 
+            memory: "1Gi"
+            cpu: "1"
+            
+
+---
+# Daemonset
+
+apiVersion: apps/v1
+kind: DaemonSet
+metadata: 
+  name: daemonset-deploy
+  labels: 
+    log: collector
+spec:
+  selector: 
+    matchLabels: 
+      log: collector
+  template: 
+    metadata: 
+      labels: 
+        log: collector
+    spec: 
+      containers: 
+      - image: alpine:3.18
+        name: alpine-cont
+        command: ["/bin/sh"]
+        args: 
+        - -c 
+        - | 
+          cat /etc/alpine-release >> /tmp/output.txt
+          sleep 3600
+        resources: 
+          requests: 
+            memory: "512Mi"
+            cpu: "0.1"
+          limits: 
+            memory: "1024Mi"
+            cpu: "1"
+
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata: 
+  name: daemonset-log
+  labels: 
+    app: log-agent
+spec: 
+  selector: 
+    matchLabels: 
+      app: log-agent
+  template: 
+    metadata: 
+      labels: 
+        app: log-agent
+    spec: 
+      containers: 
+      - image: fluent/fluentd:latest
+        name: fluend-cont
+        command: ["bin/sh"]
+        args: 
+        - -c
+        - | 
+          apt update -y 
+          sleep 3600
+          
+---
+# Node Affinity
+apiVersion: apps/v1
+kind: Deployment
+metadata: 
+  name: na-required
+  namespace: default
+  labels: 
+    web: frontend
+spec: 
+  replicas: 5
+  selector: 
+    matchLabels: 
+      web: backend
+  template: 
+    metadata: 
+      labels: 
+        web: backend
+    spec:
+      affinity:     
+       nodeAffinity:        
+         requiredDuringSchedulingIgnoredDuringExecution:
+           nodeSelectorTerms: 
+           - matchExpressions:
+             - key: web
+               operator: In 
+               values: 
+               - backend
+      containers: 
+      - image: nginx:latest
+        name: nginx-cont
+        resources: 
+          requests: 
+            memory: "128Mi"
+            cpu: "100m"
+          limits: 
+            memory: "512Mi"
+            cpu: "500m"
+
+---
+# Node Affinity - Required
+apiVersion: apps/v1
+kind: Deployment
+metadata: 
+  name: na-required
+  namespace: default
+  labels: 
+    web: frontend
+spec: 
+  replicas: 5
+  selector: 
+    matchLabels: 
+      web: backend
+  template: 
+    metadata: 
+      labels: 
+        web: backend
+    spec:
+      affinity:     
+       nodeAffinity:        
+         requiredDuringSchedulingIgnoredDuringExecution:
+           nodeSelectorTerms: 
+           - matchExpressions:
+             - key: app
+               operator: In 
+               values: 
+               - backend
+      containers: 
+      - image: nginx:latest
+        name: nginx-cont
+        resources: 
+          requests: 
+            memory: "128Mi"
+            cpu: "100m"
+          limits: 
+            memory: "512Mi"
+            cpu: "500m"
+
+--- 
+apiVersion: apps/v1
+kind: Deployment
+metadata: 
+  name: node-aff-required
+  namespace: default
+  labels: 
+    web: frontend
+spec: 
+  replicas: 3 
+  selector: 
+    matchLabels: 
+      web: frontend
+  template: 
+    metadata: 
+      labels: 
+        web: frontend
+    spec: 
+      affinity: 
+        nodeAffinity: 
+          requiredDuringSchedulingIgnoredDuringExecution: 
+            nodeSelectorTerms: 
+            - matchExpressions: 
+              - key: web
+                operator: Exists
+          - matchFields: 
+          
+      containers:
+      - image: nginx:latest
+        name: nginx-cont
+
+--- 
+# Node-Affinity preferred
+apiVersion: apps/v1
+kind: Deployment
+metadata: 
+  name: node-aff-preferred
+  namespace: default
+  labels: 
+    web: frontend
+spec: 
+  replicas: 3 
+  selector: 
+    matchLabels: 
+      web: frontend
+  template: 
+    metadata: 
+      labels: 
+        web: frontend
+    spec:
+      affinity: 
+        nodeAffinity: 
+          preferredDuringSchedulingIgnoredDuringExecution: 
+          - weight: 80
+            preference: 
+              matchExpressions: 
+              - key: web
+                operator: In 
+                values: 
+                - frontend
+          - weight: 30
+            preference: 
+              matchExpressions: 
+              - key: web
+                operator: Exists 
+                
+      containers: 
+      - image: nginx:latest
+        name: nginx-cont
+        resources: 
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata: 
+  name: 
+  namespace: 
+  labels: 
+    web: db
+spec: 
+  replicas: 18
+  selector: 
+    matchLabels: 
+      web: db
+  template: 
+    metadata: 
+      labels: 
+        web: db
+    spec: 
+      affinity: 
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution: 
+            nodeSelectorTerms: 
+            - matchExpressions: 
+              - key: 
+                operator: 
+                values: 
+      affinity: 
+       nodeAffinity:          
+         preferredDuringScheduleIgnoredDuringExecution: 
+         - weight: 70
+           matchExpressions: 
+           - key: 
+             operator: 
+             values: 
+         - weight: 10
+           key: 
+           operator: 
+           
+      containers: 
+      - image: 
+        name: 
+
+--- 
+# Node Affinity - matchFields
+apiVersion: apps/v1
+kind: Deployment
+metadata: 
+  name: matchfield-nodeaff
+  namespace: default
+  labels: 
+    web: db
+spec: 
+  replicas: 7
+  selector: 
+    matchLabels: 
+      web: db
+  template: 
+    metadata: 
+      labels: 
+        web: db
+    spec: 
+      affinity: 
+        nodeAffinity: 
+          requiredDuringSchedulingIgnoredDuringExecution: 
+            nodeSelectorTerms: 
+            - matchFields: 
+              - key: metadata.name
+                operator: In 
+                values: 
+                - k8sapp01-docker
+      containers: 
+      - image: nginx:latest
+        name: nginx-cont
+        resources: 
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+       
+--- 
+apiVersion: apps/v1
+kind: Deployment
+metadata: 
+  name: matchfield-nodeaff
+  namespace: default
+  labels: 
+    web: db
+spec: 
+  replicas: 7
+  selector: 
+    matchLabels: 
+      web: db
+  template: 
+    metadata: 
+      labels: 
+        web: db
+    spec: 
+      affinity: 
+        nodeAffinity: 
+          requiredDuringSchedulingIgnoredDuringExecution: 
+            nodeSelectorTerms: 
+            - matchFields: 
+              - key: metadata.name
+                operator: In 
+                values: 
+                - k8sapp01-docker
+            - matchFields: 
+              - key: metadata.name
+                operator: In 
+                values: 
+                - k8sapp02
+              
+      containers: 
+      - image: nginx:latest
+        name: nginx-cont
+        resources: 
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata: 
+  name: nodeselector-deployment
+  namespace: default
+  labels: 
+    ns: web
+spec: 
+  replicas: 5
+  selector: 
+    matchLabels: 
+      web: backend
+  template: 
+    metadata: 
+      labels: 
+        web: backend
+    spec: 
+      nodeSelector: 
+        web: backend
+      containers: 
+      - image: 
+        name: 
+        resources:: 
+          requests: 
+            cpu: 
+            memory: 
+          limits: 
+            cpu: 
+            memory: 
+            
+---
+# Node-Affinity => required
+apiVersion: apps/v1
+kind: Deployment
+metadata: 
+  name: node-affinity-preferred
+  namespace: default
+  labels: 
+    na: web
+spec: 
+  replicas: 4
+  selector: 
+    matchLabels: 
+      web: frontend
+  template: 
+    metadata: 
+      labels: 
+        web: frontend
+    spec: 
+      affinity: 
+        nodeAffinity: 
+          requiredDuringSchedulingIgnoredDuringExecution: 
+            nodeSelectorTerms: 
+            - matchExpressions: 
+              - key: web
+                operator: In 
+                values: db
+              - key: web
+                operator: Exists 
+                
+---
+# Node Affinity - preferred
+apiVersion: apps/v1
+kind: Deployment
+metadata: 
+  name: node-affinity-preferred
+  namespace: default
+  labels: 
+    na: web
+spec: 
+  replicas: 4
+  selector: 
+    matchLabels: 
+      web: frontend
+  template: 
+    metadata: 
+      labels: 
+        web: frontend
+    spec: 
+      affinity: 
+        nodeAffinity: 
+          preferredDuringSchedulingIgnoredDuringExecution: 
+          - weight: 80 
+            preference: 
+              matchExpressions: 
+              - key: db 
+                operator: In 
+                values: mysql
+          - weight: 60
+            preference: 
+              matchExpressions: 
+              - key: db
+                operator: Exists          
+      containers: 
+      - image: 
+        name: 
+        cmd: ["/bin/bash"]
+        args: 
+        - -c 
+        - | 
+          echo "test"
+          sleep 4500
+          
+          
+--- 
+# Node Affinity - matchFields
+apiVersion: apps/v1
+kind: Deployment
+metadata: 
+  name: node-affinity-preferred
+  namespace: default
+  labels: 
+    na: web
+spec: 
+  replicas: 4
+  selector: 
+    matchLabels: 
+      web: frontend
+  template: 
+    metadata: 
+      labels: 
+        web: frontend
+    spec: 
+      affinity: 
+        nodeAffinity: 
+          requiredDuringSchedulingIgnoredDuringExecution: 
+            nodeSelectorTerms: 
+            - matchFields: 
+              key: metadata.name
+              operator: In 
+              values: k8sapp01-docker
+            - matchFields: 
+              key: metadata.name
+              operator: NotIn
+              values: k8sapp02
+      containers:
+      - image: 
+        name: 
+        cmd: ["/bin/sh"]
+        args: 
+        - -c 
+        - | 
+          echo 
+          sleep 50
+        resources: 
+          requests: 
+            cpu: 
+            memory: 
+          limits: 
+            cpu: 
+            memory: 
+            
+      
+
+
+
+
+
+
+
+      

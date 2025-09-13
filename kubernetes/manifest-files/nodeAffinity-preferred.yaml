@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata: 
+  name: node-aff-preferred
+  namespace: default
+  labels: 
+    web: frontend
+spec: 
+  replicas: 13
+  selector: 
+    matchLabels: 
+      web: frontend
+  template: 
+    metadata: 
+      labels: 
+        web: frontend
+    spec:
+      affinity: 
+        nodeAffinity: 
+          preferredDuringSchedulingIgnoredDuringExecution: 
+          - weight: 80
+            preference: 
+              matchExpressions: 
+              - key: web
+                operator: In 
+                values: 
+                - frontend
+          - weight: 30
+            preference: 
+              matchExpressions: 
+              - key: web
+                operator: Exists 
+                
+      containers: 
+      - image: nginx:latest
+        name: nginx-cont
+        resources: 
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+
