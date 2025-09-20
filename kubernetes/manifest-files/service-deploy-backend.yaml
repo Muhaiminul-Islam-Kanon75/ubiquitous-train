@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata: 
+  name: httpd-deploy
+  labels: 
+    app: backend
+spec: 
+  replicas: 2
+  selector: 
+    matchLabels: 
+      web: backend
+  template: 
+    metadata: 
+      labels: 
+        web: backend
+    spec: 
+      containers: 
+      - image: httpd
+        name: httpd-cont
+
