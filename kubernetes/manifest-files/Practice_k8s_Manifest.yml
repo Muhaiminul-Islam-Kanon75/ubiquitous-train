@@ -867,3 +867,165 @@ spec:
         name: busybox-init
         command: ['sh', '-c', 'echo Waiting for service >> /tmp/init-container.txt && sleep 10']
         
+--- 
+# k8s Service 
+apiVersion: apps/v1
+kind: Service
+metadata: 
+  name: service-test
+spec: 
+  ports: 
+  - port: 80 # service Port, where service will run 
+    targetPort: 8080 # pod container port, where the container will run 
+    
+--- 
+# Endpoints
+apiVersion: v1 
+kind: Endpoints
+metadata: 
+  name: test-endpoint
+subsets: 
+- addresses: 
+  - ip: 10.21.2.137
+  ports: 
+  - port: 80 
+  
+  
+--- 
+# Service Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata: 
+  name: httpd-deploy
+  labels: 
+    web: frontend
+spec: 
+  replicas: 2
+  selector: 
+    matchLabels: 
+      web: backend
+  template: 
+    metadata: 
+      labels: 
+        web: backend
+    spec: 
+      containers: 
+      - image: httpd
+        name: httpd-cont
+       
+---
+# service (clusterIp)
+apiVersion: v1 
+kind: Service
+metadata: 
+  name: backend-service
+spec: 
+  selector: 
+    web: backend # must match with deployment's selector
+  ports: 
+  - port: 80 # httpd Port
+    targetPort: 8080 # httpd-container run port in the pod
+    
+---
+# Service (NodePort)
+apiVersion: v1 
+kind: Service
+metadata: 
+  name: nodeport-service
+spec: 
+  type: NodePort
+  selector: 
+    web: backend # must match with deployment's selector
+  ports: 
+  - port: 8080 # kubernetes service run port. it will be mentioned with the service ip
+    targetPort: 80 # Container run port. in container httpd is running. httpd runs in 80 port
+    nodePort: 30021 # NodePort service running port. not mandatory. 
+---
+# Ingress test 
+## apache Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata: 
+  name: apache-dpl
+  namespace: ingress-test
+  labels: 
+    app: web1
+spec: 
+  replicas: 2 
+  selector: 
+    matchLabels: 
+      app: web-apache 
+  template: 
+    metadata: 
+      labels: 
+        app: web-apache
+    spec: 
+      containers: 
+      - image: httpd:latest
+        name: apache-cont
+        resources: 
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+---
+
+## apache Deployment svc
+apiVersion: v1 
+kind: Service
+metadata: 
+  name: ingress-apache
+  namespace: ingress-test
+spec: 
+  selector: 
+    app: web-apache
+  ports: 
+  - port: 8080 # K8s Service will run 
+    targetPort: 80 # underline containers will run 
+
+--- 
+## Nginx Service Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata: 
+  name: nginx-dpl 
+  namespace: ingress-test
+  labels: 
+    app: web2 
+spec: 
+  replicas: 2 
+  selector: 
+    matchLabels: 
+      app: web-nginx 
+  template: 
+    metadata: 
+      labels: 
+        app: web-nginx
+    spec: 
+      containers: 
+      - image: nginx:latest
+        name: nginx-cont
+        resources: 
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+--- 
+
+## Nginx Deployment svc
+apiVersion: v1 
+kind: Service
+metadata: 
+  name: ingress-nginx
+  namespace: ingress-test
+spec: 
+  selector: 
+    app: web-nginx
+  ports:
+  - port: 9154
+    targetPort: 80 
+---
