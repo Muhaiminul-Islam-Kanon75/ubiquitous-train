@@ -1,0 +1,11 @@
+apiVersion: v1 
+kind: Service
+metadata: 
+  name: ingress-apache
+  namespace: ingress-test
+spec: 
+  selector: 
+    app: web-apache
+  ports: 
+  - port: 8080 # K8s Service will run 
+    targetPort: 80 # underline containers will run 
