@@ -1029,3 +1029,34 @@ spec:
   - port: 9154
     targetPort: 80 
 ---
+# Ingress
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata: 
+  name: pilot-ingress
+  namespace: ingress-test
+spec: 
+  ingressClassName: nginx
+  rules: 
+  - host: shop.portal.com
+    http: 
+      paths: 
+      - path: / 
+        pathType: Prefix
+        backend: 
+          service: 
+            name: ingress-apache
+            port: 
+              number: 9090
+  - host: support.portal.com
+    http: 
+      paths: 
+      - path: /
+        pathType: Prefix
+        backend: 
+          service: 
+            name: ingress-nginx
+            port: 
+              number: 9154
+
+---
