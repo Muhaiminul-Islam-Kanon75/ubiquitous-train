@@ -7,5 +7,5 @@ spec:
   selector: 
     app: web-apache
   ports: 
-  - port: 8080 # K8s Service will run 
+  - port: 9090 # K8s Service will run 
     targetPort: 80 # underline containers will run 
