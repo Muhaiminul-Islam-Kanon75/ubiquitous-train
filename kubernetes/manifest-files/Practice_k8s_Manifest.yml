@@ -685,7 +685,7 @@ spec:
             memory: "512Mi"
             cpu: "500m"
 ---
-
+# Node selector object
 apiVersion: apps/v1
 kind: Deployment
 metadata: 
@@ -703,8 +703,8 @@ spec:
       labels: 
         web: backend
     spec: 
-      nodeSelector: 
-        web: backend
+      nodeSelector:  # node selector object
+        web: backend 
       containers: 
       - image: 
         name: 
@@ -1060,3 +1060,83 @@ spec:
               number: 9154
 
 ---
+# ingress 2
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata: 
+  name: ingress-name
+  namespace: namespace-name
+spec: 
+  ingressClassName: nginx
+  rules: 
+  - host: application.site
+    http: 
+      paths: 
+      - path: / 
+        pathType: Prefix
+        backend: 
+          service: 
+            name: created-service-name
+            port: 
+              number: 9154
+---
+# Service Account Creation
+apiVersion: v1 
+kind: ServiceAccount
+metadata: 
+  name: opsuser
+  namespace: ingress-test
+---
+
+# HPA 
+## Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata: 
+  name: nginx-hpa
+  labels: 
+    app: web
+spec: 
+  replicas: 2 
+  selector: 
+    matchLabels: 
+      app: web
+  template: 
+    metadata: 
+      labels: 
+        app: web
+    spec: 
+      containers: 
+      - image: nginx
+        name: nginx-cont
+        resources: 
+          requests: 
+            cpu: "100m"
+          limits: 
+            cpu: "200m"
+            
+--- 
+# service
+apiVersion: v1 
+kind: Service
+metadata: 
+  name: nginx-hpa-svc
+spec: 
+  selector: 
+    app: web
+  ports: 
+  - port: 9090 # service run port
+    targetPort: 80 # internal container run port 
+---
+
+# HPA
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata: 
+  name: hpa-test
+spec: 
+  minReplicas: 2 
+  maxReplicas: 10
+  scaleTargetRef: 
+    apiVersion: apps/v1
+    kind: Deployment # Deployment name which was 
