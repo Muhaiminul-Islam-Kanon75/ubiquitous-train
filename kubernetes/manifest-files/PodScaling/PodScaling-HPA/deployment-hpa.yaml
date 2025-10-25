@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata: 
+  name: nginx-hpa
+  labels: 
+    app: web
+spec: 
+  replicas: 1
+  selector: 
+    matchLabels: 
+      app: web
+  template: 
+    metadata: 
+      labels: 
+        app: web
+    spec: 
+      containers: 
+      - image: httpd
+        name: httpd-cont
+        resources: 
+          requests: 
+            cpu: "100m"
+            memory: "50Mi"
+          limits: 
+            cpu: "200m"
+            memory: "200Mi"
+
