@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata: 
+  name: nginx-pod
+  labels: 
+    app: nginx
+spec: 
+  replicas: 3 
+  selector: 
+    matchLabels: 
+      app: nginx
+  template: 
+    metadata: 
+      labels: 
+        app: nginx
+    spec: 
+      containers: 
+      - image: nginx
+        name: nginx-cont
+        volumeMounts: 
+        - name: nginx-logs
+          mountPath: /var/log/nginx
+      - image: busybox
+        name: log-collector-cont
+        command: ["/bin/sh"]
+        args: 
+        - -c 
+        - | 
+          tail -F /var/log/nginx/access.log | awk '{print $1,$4,$5,$9, $11}' | sed s/\"//g >> /apps/logs/nginx/access_log.txt
+          tail -F /var/log/nginx/error.log | awk '{print $1,$2,$4,$8}' | sed s/\"//g >> /apps/logs/nginx/error_log.txt
+          sleep 36000
+        volumeMounts: 
+        - name: nginx-logs
+          mountPath: /var/log/nginx
+        - name: log-collector
+          mountPath: /apps/logs/nginx
+          
+      volumes: 
+      - name: nginx-logs
+        emptyDir: {}
+      - name: log-collector
+        persistentVolumeClaim: 
+          claimName: pvc-nginx

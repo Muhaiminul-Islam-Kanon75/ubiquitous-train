@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata: 
+  name: nfs-test
+  namespace: default
+  labels: 
+    app: nfs
+spec: 
+  replicas: 2 
+  selector: 
+    matchLabels: 
+      app: nfs
+  template: 
+    metadata: 
+      labels: 
+        app: nfs
+    spec: 
+      volumes: 
+      - name: nfs-volume1
+        persistentVolumeClaim: 
+          claimName: nfs-pvc
+      containers:
+      - image: busybox
+        name: busybox-cont
+        command: ["/bin/sh"]
+        args: 
+        - -c 
+        - |
+          while true; do
+            echo "Hello from $(hostname) at $(date)" >> /mnt/data/testfile.txt;
+            sleep 5;
+          done
+        volumeMounts: 
+        - name: nfs-volume1
+          mountPath: /mnt/data/
+            
+

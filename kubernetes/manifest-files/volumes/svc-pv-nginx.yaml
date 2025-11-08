@@ -1,0 +1,13 @@
+apiVersion: v1 
+kind: Service
+metadata: 
+  name: pv-test-nginx
+spec: 
+  selector: 
+    app: nginx
+  type: NodePort
+  ports: 
+  - port: 9090 # service run port
+    targetPort: 80 # container run port
+    nodePort: 30085
+

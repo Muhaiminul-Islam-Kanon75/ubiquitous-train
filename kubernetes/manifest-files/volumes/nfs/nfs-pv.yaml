@@ -1,0 +1,17 @@
+# Mount PV/PVC in NFS 
+# PersistentVolume - NFS
+apiVersion: v1
+kind: PersistentVolume
+metadata: 
+  name: nfs-pv
+  labels: 
+    app: nfs
+spec: 
+  storageClassName: nfs-storage
+  capacity: 
+    storage: 2Gi
+  accessModes: 
+  - ReadWriteMany
+  nfs: 
+    path: /app_nfs/applications/logs/nginx # nfs mountpath of main NFS server
+    server: 192.168.72.131 # IP of Main nfs server

@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata: 
+  name: hostpath-dp
+  labels: 
+    app: db 
+spec: 
+  replicas: 3
+  selector: 
+    matchLabels: 
+      app: db 
+  template: 
+    metadata: 
+      labels: 
+        app: db
+    spec: 
+      containers: 
+      - image: busybox
+        name: busybox-cont
+        command: ["/bin/sh"]
+        args: 
+        - -c 
+        - | 
+          mkdir -p /mnt/data
+          echo "Hello world" > /mnt/data/hello.txt
+          sleep 3600
+        volumeMounts: 
+        - name: mnt-data
+          mountPath: /mnt/data # data path of pod/container need to be mounted
+      volumes: 
+      - name: mnt-data # should be matched with volumeMounts name 
+        hostPath: 
+          path: /opt/hostdata # where data path will be mounted in linux server
+          type: DirectoryOrCreate # create directory if not available there
+

@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata: 
+  name: multi-cont-emptydir
+  labels: 
+    app: log-agent
+spec: 
+  replicas: 3
+  selector: 
+    matchLabels: 
+      app: log-agent
+  template:
+    metadata:   
+      labels: 
+        app: log-agent
+    spec: 
+      containers: 
+      - image: busybox
+        name: busybox-cont
+        command: ["/bin/sh"]
+        args: 
+        - "-c"
+        - | 
+          mkdir -p /usr/local/data && touch /usr/local/data/hello.txt
+          echo -e "Received shutters expenses ye he pleasant.\nDrift as blind above at up.\nNo up simple county stairs do should praise as.\nDrawings sir gay together landlord had law smallest.\nFormerly welcomed attended declared met say unlocked." > /usr/local/data/hello.txt
+          sleep 3600
+        volumeMounts: 
+        - name: log-creator # should be matched with volumes name
+          mountPath: /usr/local/data # data path of pod/container need to be mounted
+        
+      - image: busybox
+        name: busybox-cont-col
+        command: ["/bin/sh"]
+        args: 
+        - "-c"
+        - | 
+          touch /tmp/log-collector.txt
+          cat /usr/local/data/hello.txt >> /tmp/log-collector.txt
+          echo -e "\n\nExcited him now natural saw passage offices you minuter.\nAt by asked being court hopes.\nFarther so friends am to detract.\nForbade concern do private be.\nOffending residence but men engrossed shy.\nPretend am earnest offered arrived company so on.\nFelicity informed yet had admitted strictly how you." >> /tmp/log-collector.txt
+          sleep 3600
+        volumeMounts: 
+        - name: log-creator # to make visible the storage to the second container
+          mountPath: /usr/local/data
+        - name: log-creator
+          mountPath: /tmp
+      volumes: 
+      - name: log-creator # should be matched with volumeMounts name
+        emptyDir: {}

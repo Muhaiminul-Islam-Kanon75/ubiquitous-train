@@ -1345,7 +1345,120 @@ spec:
       containers: 
       - image: nginx 
         name: nginx-cont
----        
+---
+# Service VPA
+apiVersion: v1 
+kind: Service
+metadata: 
+  name: nginx-vpa-svc
+spec: 
+  selector: 
+    app: frontend
+  type: NodePort
+  ports: 
+  - port: 8888
+    targetPort: 80
+---     
 
 # Vertical pod autoscaling
-apiVersion: autoscaling/v1 
+apiVersion: autoscaling.k8s.io/v1 
+kind: VerticalPodAutoscaler
+metadata: 
+  name: vpa-nginx
+  namespace: default
+spec: 
+  targetRef: 
+    apiVersion: apps/v1
+    kind: Deployment
+    name: nginx-deployment # deployment name 
+  updatePolicy: 
+    updateMode: "Off"
+    
+---
+# kubernetes Volume
+apiVersion: apps/v1
+kind: Deployment
+metadata: 
+  name: hostpath-dp
+  labels: 
+    app: db 
+spec: 
+  replicas: 3
+  selector: 
+    matchLabels: 
+      app: db 
+  template: 
+    metadata: 
+      labels: 
+        app: db
+    spec: 
+      containers: 
+      - image: busybox
+        name: busybox-cont
+        command: ["/bin/sh"]
+        args: 
+        - -c 
+        - | 
+          mkdir -p /mnt/data
+          echo "Hello world" > /mnt/data/hello.txt
+          sleep 3600
+        volumeMounts: 
+        - name: mnt-data # should be matched with volumes.name
+          mountPath: /mnt/data # data path of pod/container need to be mounted
+      volumes: 
+      - name: mnt-data # should be matched with volumeMounts.name 
+        hostPath: 
+          path: /opt/hostdata # where data path will be mounted in linux server
+          type: DirectoryOrCreate # create directory if not available there
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata: 
+  name: temp-volume-pod
+  labels: 
+    app: log-collector
+spec: 
+  replicas: 3
+  selector: 
+    matchLabels: 
+      app: log-collector
+  template: 
+    metadata: 
+      labels: 
+        app: log-collector
+    spec: 
+      containers: 
+      - image: busybox
+        name: busybox-cont
+        command: ["/bin/sh"]
+        args: 
+        - -c
+        - |
+          mkdir -p /mnt/data
+          echo "Hello world" > /mnt/data/hello.txt
+          sleep 3600
+        volumeMounts: 
+        - name: log-printer-path
+          mountPath: /mnt/data
+      - image: busybox
+        name: log-collector-cont 
+        command: ["/bin/sh"]
+        args: 
+        - -c
+        - | 
+          cat /mnt/data/hello.txt > /tmp/output.txt
+          echo "Log collector worked" >> /tmp/output.txt
+          sleep 3600
+        volumeMounts: 
+        - name: log-collector-path
+          mountPath: /tmp
+      volumes: 
+      - name: log-printer-path
+        emptyDir: {}
+      - name: log-collector-path
+        hostPath: 
+          path: /opt/hostdata
+          type: DirectoryOrCreate
+
+---      
