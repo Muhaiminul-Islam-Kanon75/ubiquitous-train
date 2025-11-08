@@ -1,0 +1,64 @@
+To Check postfix and mailx installed or not. 
+
+- rpm -qa | grep postfix
+- rpm -qa | grep mailx
+
+installation: 
+yum/dnf install postfix
+yum/dnf install mailx
+
+Configuration file update: 
+- path: /etc/postfix/main.cf
+  
+  relayhost = [smtp.gmail.com]:587
+  myhostname = [server_hostname]
+
+Location of sasl_passwd we saved
+- smtp_sasl_password_maps = hash:/etc/postfix/sasl/sasl_passwd
+
+Enables SASL authentication for postfix
+- smtp_sasl_auth_enable = yes
+- smtp_tls_security_level = encrypt
+
+Disallow methods that allow anonymous authentication
+- smtp_sasl_security_options = noanonymous
+
+Add Authentication related configurations. 
+1. Create folder under /etc/postfix/
+   - /etc/postfix/sasl/
+
+2. Create File under sasl directory
+   - sasl_passwd
+   
+3. Add below line. 
+   - [smtp.gmail.com]:587 *@gmail.com:authenticate_passwrd
+   
+   To create password: 
+   go to : https://myaccount.google.com/signinoptions/twosv?gar=WzJd&rapt=AEjHL4Pt9DL8Vl51ZBtC3ti7_3P7EU3vSH5WCUpB44cK3mOLeGILgyepGF7-s-jzCxK_glzZ77FlLjypApfj38iv3VN3uakYDWCqHMyZWqGxZP9YN9lNMlk
+   2 step verification > App passwords 
+   Enter app name [smtp] > Create > generate app password
+   
+   Command: 
+   evla xrlj brsk bfil
+   [smtp.gmail.com]:587 mikanon37@gmail.com:evlaxrljbrskbfil
+   [smtp.gmail.com]:587 mailalert404@gmail.com:peisybocjrzwdhqr
+   
+4. Convert the sasl_passwd file into db file. 
+   - postmap /etc/postfix/sasl/sasl_passwd`
+   
+5. to test
+   - echo "Test mail" | mailx -s "Postfix test" mikanon37@gmail.com
+   
+   with attachment:
+   - echo "Test mail" | mailx -S smtp=smtp_server -r [from mail] -s "Subject" -a filename -c [cc mail] [to mail]
+   
+   
+Option: 
+Syntax : -S variable[=value] 
+Command: -S "from=System User <DoNotReply>"
+		 -S smptp=0.0.0.0
+To troubleshoot: check maillog
+- /var/log/maillog
+
+
+RedH@t0011

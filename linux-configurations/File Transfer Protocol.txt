@@ -1,0 +1,104 @@
+FTP Configuration in Linux: 
+
+1. Remote Server : Where files will be transfered 
+2. Client Server : from where files will be pushed to remote server. 
+
+Remote Server Setup
+192.168.0.116 [FTP Remote]
+
+1. Need root access
+2. install vsftpd service
+	- to chech: rpm -qa vsftpd
+	- [dnf/yum] install vsftpd
+	- Configuration file: /etc/vsftpd/vsftpd.conf
+3. Configuration file update
+   update changes: 
+	anonymous_enable=NO
+   Uncomment
+	#ascii_upload_enable=YES
+	#ascii_download_enable=YES
+   
+   Optional Addition
+   use_localtime=YES
+   
+   
+4. Service modification: 
+	systemctl status vsftpd.service
+	systemctl start vsftpd.service
+	systemctl enable --now vsftpd.service
+
+
+5. Enable ftp port in the remote host
+	firewall-cmd --add-port=port_number/protocol --permanent
+	firewall-cmd --reload
+
+Client Server: 192.168.0.
+1. Need root access
+2. install ftp service
+	- to chech: rpm -qa ftp
+	- [dnf/yum] install ftp
+	
+3. Enable ftp port in the host
+	firewall-cmd --add-port=port_number/protocol --permanent
+	firewall-cmd --reload
+
+
+For login: 
+
+ftp server_ip
+username: 
+password: 
+
+options: 
+-i Disable interactive prompting by multiple-file commands
+
+
+
+
+For no prompt: use lftp
+
+login: 
+syntax : lftp -u $username,$password server_ip
+command: lftp -u mikanon37,4747378ka 192.168.0.116
+
+for lftp sftp mput does not require confirmation prompt
+
+For secure: sftp
+
+For login through SFTP without password prompt
+command can be used: sshpass
+
+login: 
+syntax : sshpass -p '$pass' sftp username@server_ip
+command: SSHPASS=4747378ka sshpass -e sftp mikanon37@192.168.0.116
+
+alternate: 
+
+syntax : SSHPASS=4747378ka sshpass -e sftp mikanon37@192.168.0.116
+
+sshpass options
+-e     The password is taken from the environment variable "SSHPASS".
+
+
+File transfer command: 
+
+Have to be in the transfer file location directory. 
+
+login to ftp server. 
+
+for single file transfer: 
+	put filename. 
+
+ftp -i server_ip : Disable interactive prompting by multiple-file commands
+
+for multiple file transfer 
+	mput filename, filename1, filename2
+	
+- wild card can be used
+
+To download file from a remote directory: 
+
+
+
+To resolve the lftp command delay: 
+set ftp:passive-mode true

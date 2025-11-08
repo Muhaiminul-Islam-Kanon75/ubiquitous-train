@@ -1,0 +1,422 @@
+=== LVM ===
+Logical Volume Manager
+
+LVM is used to manage volume and disk on the Linux server. Logical Volume Manager allows disks to be combined together 
+
+Like partition of disk in windows C/D/E drive. Similarly we can do the same in the linux. 
+	* Single disk can be divided into different partitions. 
+	* Multiple disks combined and group them into one -> then change it into different partitions
+
+LVM Structure Diagram
+
+ * Raw Disk => Physical Volume => merge into => Volume Group => configured into => Logical volume/ Multiple mountpoint
+ 
+Example: 
+													 Logical Volume
+Raw disk 1 200GB ---------------------------------------------------> |==> mounted on /boot (mountpoint) 
+Raw disk 2 2.5TB ¯¯| => =>Physical Volume =>  1 Volume Group 3TB   => |==> mounted on /home (mountpoint) 
+Raw disk 3 500GB __|							 					  |==> mounted on / 	(mountpoint) 
+																	  |==> mounted on /etc  (mountpoint) 
+																	  |==> mounted on /apps (mountpoint) 
+																	  |==> mounted on /tmp  (mountpoint) 
+					
+* When multiple physical disk is merged into one volume group -- its easily managable. 
+* Multiple physical disks can be merged and create one single volume group
+	then the single volume group can divided into multiple partitions mounted to different mountpoint(drive)
+	
+Advantage of LVM
+* if disk is running out of space, you can add new physical disk to the volume group without breakin partitions of the file system. 
+
+Possibilites of LVM: 
+	* New space can be created on a server for new project. 
+	* In case of low disk space, inrease the space
+	* In case of extra space allocated to a partition, capacity can be reallocated (reduce capacity in one group to another)
+
+					
+Various Combinations of LVM 
+	* A single hard disk can be splited into two or multiple physical volume
+	
+		Physical disk 1 => Physical Volume 1 
+						=> Physical Volume 2 
+	
+	* Multiple physical volume can be merged into one volume group 
+	
+	* Multiple logical volume of a single volume group
+	
+		Volume Group 1 => Logical volume 1
+					   => logical volume 2
+	
+	* two different hard disk/physical disk can be set up as two physical volume and two/multiple different physical volume can be merged into a single volume group
+	* Multiple physical volumes can be merged in a single volume group 
+	* In one server there can be multiple volume groups. 
+	
+Size of a sector 512 byte. 
+Sector 0 - MBR (Master Boot Record) / gpt (GUID Partition Table)
+
+Windows Filesystem
+------------------
+FAT32 - max capacity 32gb
+NTFS - MAX Capacity 2TB
+	   Data encryption supported. 
+
+Linux Filesystem: 
+------------------
+btrfs, ext2, ext3, vfat, swap, ZFS
+
+Most Popular: 
+ext4 - Capacity 50TB
+XFS - Capacity 500TB
+
+Device(disk) file location: /dev/* 
+
+Red Hat default file system: XFS 
+
+disk label type: 
+MBR - dos [disk operating system]
+gpt - gpt [GUID Partition Table]
+
+
+
+
+ MBR ==> 512-byte sectors, 2TB Max Partition Size
+ GPT ==> 512-byte sectors, 9.4 Zettabytes Max Partition Size
+ 
+ Total Partition: MBR/dos - BIOS
+ ---------------------------
+ Linux Partition = 15 (4 Primary + 11 Logical)
+ Windows Partition: 26 
+
+ Total Partition: GPT - UEFI
+ ---------------------------
+ Total Partition: 128 (Windows/Linux)
+
+
+
+gpt partition - 128 [No primary/logical partition concept]
+
+fdisk help panel: 	
+  DOS (MBR)
+   a   toggle a bootable flag
+   b   edit nested BSD disklabel
+   c   toggle the dos compatibility flag
+
+  Generic
+   d   delete a partition
+   F   list free unpartitioned space
+   l   list known partition types
+   n   add a new partition
+   p   print the partition table
+   t   change a partition type
+   v   verify the partition table
+   i   print information about a partition
+
+  Misc
+   m   print this menu
+   u   change display/entry units
+   x   extra functionality (experts only)
+
+  Script
+   I   load disk layout from sfdisk script file
+   O   dump disk layout to sfdisk script file
+
+  Save & Exit
+   w   write table to disk and exit
+   q   quit without saving changes
+
+  Create a new label
+   g   create a new empty GPT partition table
+   G   create a new empty SGI (IRIX) partition table
+   o   create a new empty MBR (DOS) partition table
+   s   create a new empty Sun partition table
+
+
+Process: 
+	syntax: fdisk /dev/disk_name
+	command: fdisk /dev/sdb
+	
+	Move between gpt and MBR(dos)
+		g - gpt 
+		o - MBR/dos
+	
+	n - add a new partition
+	p - primary partition (default)
+	e - extended (logical partition under 4th primary)
+	
+	partition number: 1,2,3
+	
+	First sector: 2048 (default)
+	Last sector: can mention exact size of space you want allocate 
+		example: +3GB
+	p - to check whether partition is created or not. 
+		Device     Boot Start     End Sectors  Size Id Type
+		/dev/sdb1        2048 5861375 5859328  2.8G 83 Linux
+		
+	t - change the partition type 
+		by default = Linux
+		to change multiple you have to select the partition number
+	
+	L - list the Hex code of partition type
+		Aliases:
+		linux          - 83
+		swap           - 82
+		extended       - 05
+		uefi           - EF
+		raid           - FD
+		lvm            - 8E
+		linuxex        - 85
+		
+	8e - for linux LVM
+		Changed type of partition 'Linux' to 'Linux LVM'.
+	
+	8e00 - when using gdisk command 
+	
+	w - save and exit. 
+	
+	lsblk - to check 
+	sdb      8:16   0   10G  0 disk
+	└─sdb1   8:17   0  2.8G  0 part -- newly added
+	
+	syntax: pvcreate partition_name [lsblk to check]
+	command: pvcreate /dev/sdb1 -- create partition from the extracted portion 
+	  
+	  Physical volume "/dev/sdb1" successfully created.
+	  Creating devices file /etc/lvm/devices/system.devices
+	
+	pvs Display information about physical volumes
+	pvdisplay — Display various attributes of physical volume(s)
+	
+		"/dev/sdb1" is a new physical volume of "2.79 GiB"
+		--- NEW Physical volume ---
+		PV Name               /dev/sdb1
+		VG Name
+		PV Size               2.79 GiB
+		Allocatable           NO
+		PE Size               0
+		Total PE              0
+		Free PE               0
+		Allocated PE          0
+		PV UUID               Bstnfc-kCfI-raE8-cYv9-EC6t-N3q1-4ZG9AE
+
+	pvscan — List all physical volumes 
+	
+		PV /dev/sdb1         lvm2 [2.79 GiB]
+		Total: 1 [2.79 GiB] / in use: 0 [0   ] / in no VG: 1 [2.79 GiB]
+	
+	syntax: vgcreate -s [size] volume_group_name partition_name
+	command: vgcreate -s 32M vg-sdb1 /dev/sdb1
+	
+	pv size * 1024 -- write on size 
+	
+	vgdisplay - Display volume group information
+		
+		--- Volume group ---
+		VG Name               vg-sdb1
+		System ID
+		Format                lvm2
+		Metadata Areas        1
+		Metadata Sequence No  1
+		VG Access             read/write
+		VG Status             resizable
+		MAX LV                0
+		Cur LV                0
+		Open LV               0
+		Max PV                0
+		Cur PV                1
+		Act PV                1
+		VG Size               2.78 GiB
+		PE Size               32.00 MiB
+		Total PE              89
+		Alloc PE / Size       0 / 0
+		Free  PE / Size       89 / 2.78 GiB
+		VG UUID               ekxJTr-c8qQ-otyg-8Acz-30fK-j16E-WVpaBr
+
+	syntax: lvcreate -n Logical_volume_name -L volume_size volume_group_name
+	command: lvcreate -n lv-vg-sdb1 -L 2.78GB vg-sdb1
+	
+		Free  PE / Size       89 / 2.78 GiB -- can only use free storage printed on vgdisplay command. 
+	
+	 lvscan - List all logical volumes in all volume groups
+		ACTIVE            '/dev/vg-sdb1/lv-vg-sdb1' [2.78 GiB] inherit
+
+	lvdisplay — Display information about a logical volume
+		--- Logical volume ---
+		LV Path                /dev/vg-sdb1/lv-vg-sdb1
+		LV Name                lv-vg-sdb1
+		VG Name                vg-sdb1
+		LV UUID                aOH5BB-9akz-ymyf-dYjh-wwuq-Kbl1-keNUzO
+		LV Write Access        read/write
+		LV Creation host, time fedora, 2024-07-21 22:30:50 +0600
+		LV Status              available
+		# open                 0
+		LV Size                2.78 GiB
+		Current LE             89
+		Segments               1
+		Allocation             inherit
+		Read ahead sectors     auto
+		- currently set to     256
+		Block device           253:0
+		
+** Logical Volume Successfully created
+
+for checking: lsblk
+
+	NAME                      MAJ:MIN RM  SIZE RO TYPE MOUNTPOINTS
+	sda                         8:0    0   60G  0 disk
+	├─sda1                      8:1    0  600M  0 part /boot/efi
+	├─sda2                      8:2    0    1G  0 part /boot
+	└─sda3                      8:3    0 58.4G  0 part /home
+													/
+	sdb*                        8:16   0   10G  0 disk
+	└─sdb1                      8:17   0  2.8G  0 part
+	└─vg--sdb1-lv--vg--sdb1 	253:0  0  2.8G  0 lvm
+	sdc                         8:32   0    6G  0 disk
+	zram0                     252:0    0  5.3G  0 disk [SWAP]
+
+Modifying file system [xfs/ext4/btrfs]
+	for xfs
+	syntax: mkfs.xfs lvm_path [/dev/vg_name/lv_name]
+	command: mkfs.xfs /dev/vg-sdb1/lv-vg-sdb1
+	
+	for ext4
+	syntax: mkfs.ext4 lvm_path [/dev/vg_name/lv_name]
+	
+Making directory to configure mountpoint
+	1. mkdir /apps_logs
+	2. syntax: mount lvm_path[/dev/vg_name/lv_name] directory_on_which_will_be_mounted
+	   command: mount /dev/vg-sdb1/lv-vg-sdb1 /apps_logs/
+	   
+	for checking: df -hT
+	Filesystem                        Type      Size  Used Avail Use% Mounted on
+	/dev/sda3                         btrfs      59G  5.8G   52G  11% /
+	devtmpfs                          devtmpfs  4.0M     0  4.0M   0% /dev
+	tmpfs                             tmpfs     2.7G     0  2.7G   0% /dev/shm
+	tmpfs                             tmpfs     1.1G  1.4M  1.1G   1% /run
+	tmpfs                             tmpfs     2.7G   16K  2.7G   1% /tmp
+	/dev/sda3                         btrfs      59G  5.8G   52G  11% /home
+	/dev/sda2                         ext4      974M  289M  618M  32% /boot
+	/dev/sda1                         vfat      599M   20M  580M   4% /boot/efi	
+  * /dev/mapper/vg--sdb1-lv--vg--sdb1 xfs       2.8G   52M  2.7G   2% /apps_logs
+	
+	3. Make the mountpoint permanent: 
+		vi /etc/fstab
+	add like below line: 
+	
+	to find UUID: 
+	syntax: blkid lvm_path
+	command: blkid /dev/vgsdb1/lv1
+	
+	syntax:  UUID=(blkid lvm_path[/dev/vg_name/lv_name]) mounpoint_folder(mounted on) defaults 0	0
+	command: UUID=1c57c1ce-631f-43d6-bc00-a8541255038f /apps_logs xfs	defaults	0 0
+	
+	to check: 
+	mount -a -- to mount all file systems mentioend fstab
+	mount -- to check mounpoint details
+	
+	rebooot and check
+	
+#Storage Extention
+
+1. Create partition to extend: 
+	syntax: fdisk /dev/disk_name
+	command: fdisk /dev/sdb
+	
+	process: same as partition creation. 
+	for checking: p
+	
+2. Create physical volume from the partition: 
+	syntax: pvcreate /dev/disk_name
+	command: pvcreate /dev/sdb2
+	for checking: 
+		pvscan
+		pvdisplay
+		pvs
+
+3. Extending the volume group: 
+	syntax: vgextend volume_group_name_to_be_exteneded from_which_physical_disk_it_will_be_extended
+	command: vgextend vg-sdb1 /dev/sdb2
+	
+4. Extending LVM: 
+	syntax: lvextend -L +[size] lvm_path
+	command: lvextend -L +488MB /dev/vg-sdb1/lv-vg-sdb1
+		* for size you need allocate the size shown on vgdisplay PE size
+	for checking: 
+		lvscan
+		lvdisplay
+		
+5. Expanding the file system
+   For finding: check df -hT mounpoint type
+	for xfs
+	syntax: xfs_growfs /mounpoint_folder
+	command: xfs_growfs /apps_logs/
+	
+	for ext4
+	syntax: resize2fs lvm_path
+	command: resize2fs /dev/vg-sdb1/lv-vg-sdb1
+	
+6. systemctl daemon-reload (if needed)
+
+Storage Removal
+
+1. remove fstab entry from /etc/fstab
+	#UUID=1c57c1ce-631f-43d6-bc00-a8541255038f /apps_logs xfs       defaults        0 0
+
+2. unmount the mountpoint 
+	syntax: umount /mountpoint_name
+	command: umount /apps_logs
+	
+3. remove LVM: 
+	syntax: lvremove /dev/volume_group_name/lv_name
+	command: lvremove /dev/vg-sdb1/lv-vg-sdb1
+	
+4. Remove Volume group
+	syntax: vgremove [volume_group_name]
+	command: vgremove vg-sdb1
+	
+5. Remove Physical Volume
+	syntax: pvremove /dev/physical_volume_name
+	command: pvremove /dev/sdb1 
+			 pvremove /dev/sda2
+
+6. to check: lsblk
+
+7. Remove the partition: 
+	syntax: fdisk /dev/partition_name
+	command: fdisk /dev/sdb
+	
+	for deleting partition: d 
+	select partition number: 1/2/3 (do it muliple if partition is more than one)
+	
+	save & exit: w
+
+To check free space of a disk. 
+	syntax: parted /dev/disk_name
+	command: parted /dev/sdb
+	
+To check free space 
+	command: print free
+
+=========================================
+
+/etc/fstab Entry:
+
+ /dev/sda5    			/data1    xfs      defaults     0  0
+ /dev/sda6    			/data2    ext4     defaults     0  0
+
+    1				 2	  3         4           5  6
+  
+ 1 - partition
+ 2 - mountpoint
+ 3 - filesystem
+ 4 - options(quota,acl,ro,luks)
+ 5 - Dumping 
+
+ *** ৫ নাম্বার ফিল্ডটি ব্যবহার করার হয় Dump প্রোগামের জন্য। যদি ভ্যালু '1' সেট করা হয়, তাহলে Dump ইউটিলিটি পার্টিশন ব্যাকাপের জন্য কাজ করবে।  
+আর যদি ভ্যালু '0' সেট করা হয়, তাহলে Dump ইউটিলিটি পার্টিশন ব্যাকাপের জন্য কোনও কাজ করবে না। 
+
+Backup operation – the fifth field contains a 1 if the dump utility should back up a partition or a 0 if it shouldn’t. If you never use the dump backup program, you can ignore this option.
+
+ 6 - file system check options
+
+ *** ৬ নাম্বার ফিল্ডটি ব্যবহার করার হয় 'fsck' (Fiel System Checking) প্রোগামের জন্য। সিস্টেম বুটিং এর সময় ডিভাইস/ পার্টিশনের Errors চেক করে।  এখানে '0' উল্লেখ করলে 'fsck' কাজ করবে না। আর যদি রুট পার্টিশনের ক্ষেত্রে '1' এবং অন্য পার্টিশনের ক্ষেত্রে '2' সেট করা হয়, তাহলে সিস্টেম বুটিং এর সময় ফাইল সিস্টেম চেক করবে। 
+
+File system check order – the sixth field specifies the order in which fsck checks the device/partition for errors at boot time. A 0 means that fsck should not check a file system. Higher numbers represent the check order. The root partition should have a value of 1 , and all others that need to be checked should have a value of 2.

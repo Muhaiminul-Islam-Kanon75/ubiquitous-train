@@ -1,0 +1,96 @@
+NFS Configuration: 
+
+1. Client side Configuration
+2. Server side Configuration
+
+#Server Side Configuration: 
+=> dnf install nfs-utils libnfsidmap
+
+start the nfs related services. 
+rpcbind
+nfs-server
+rpc-statd
+nfs-idmapd
+
+enable: 
+rpcbind
+nfs-server
+
+Create a directory for NFS and give all permissions. 
+/app_nfs/
+Or 
+/app_nfs/nfs/
+
+Modify the /etc/exports file and add new shared filesystem. 
+directory [IP_Allow](rw,sync,no_root_squash)
+
+vi /etc/exports
+
+syntax : directory IP_Allow(permissions)
+command: /app_nfs/ 192.168.72.0/24(rw,sync,no_root_squash)
+
+exportfs -rv [for export the changes]
+#exporting 192.168.72.0/24:/app_nfs
+
+Firewall stop
+systemctl stop firewalld.service
+
+##Client Side Configuration: 
+=> dnf install nfs-utils rpcbind
+
+systemctl start rpcbind.service
+systemctl enable --now rpcbind.service
+
+Firewall stop
+systemctl stop firewalld.service
+
+show mount from NFS Server: 
+syntax : showmount -e [NFS Server IP]
+command: showmount -e 192.168.72.131
+
+Output:
+Export list for 192.168.72.131: 
+/app_nfs 192.168.72.0/24
+
+=> Now create a directory in the client side to link with the NFS server mountpoint
+
+mkdir nfs_client
+
+to link 
+syntax : mount nfs_serverIP:nfs_path client_pathToconnect
+command: mount 192.168.72.131:/app_nfs /nfs_client
+
+syntax : mount -t [filesystem] IP:nfs_mountpoint_name [client NFS mounted directory name]
+command: mount -t nfs 192.168.72.131:/app_nfs /nfs_client
+
+systemctl daemon-reload
+
+To make it permanent
+
+vi /etc/fstab
+
+IP:[NFS mountpoint] [client NFS mounted directory name] [filesystem] permissions 0 0
+192.168.72.131:/app_nfs /nfs_client  nfs   rw,sync,no_root_squash,defaults 0 0
+
+
+#df -hT 
+Filesystem              Type              Size  Used Avail Use% Mounted on
+/dev/nvme0n1p3          btrfs              19G  4.7G   14G  26% /
+devtmpfs                devtmpfs          4.0M     0  4.0M   0% /dev
+tmpfs                   tmpfs             1.5G     0  1.5G   0% /dev/shm
+vmhgfs-fuse             fuse.vmhgfs-fuse  261G  161G  100G  62% /mnt
+tmpfs                   tmpfs             1.5G     0  1.5G   0% /tmp
+/dev/nvme0n1p3          btrfs              19G  4.7G   14G  26% /home
+/dev/nvme0n1p2          ext4              974M  320M  587M  36% /boot
+192.168.72.131:/app_nfs nfs4              4.8G  125M  4.7G   3% /nfs_client
+
+Do the same for all client
+
+##Firewall allow
+firewall-cmd --permanent --add-service=nfs
+firewall-cmd --permanent --add-service=mountd
+firewall-cmd --permanent --add-service=rpc-bind
+firewall-cmd --reload
+
+##selinux off 
+setenforce 0
